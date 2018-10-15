@@ -117,6 +117,16 @@ class IntegrationTests {
 		this.testPOST(rsc, body);
 	}
 
+	testUpdateUserProperties(){
+		let rsc = '/updateUserProperties?userId=0'
+		let body = {
+			firstName:'Felipe',
+			lastName:'Mendoza',
+			email:'felipe@gmail.com'
+		}
+		this.testPOST(rsc, body);
+	}
+
 
 	testGetUserProperties(){
 		this.testGET('/getUserProperties?userId=0');
@@ -149,6 +159,7 @@ class IntegrationTests {
 		this.testAddBuyOffer();
 		this.testGetUserSellList();
 		this.testGetUserBuyList();
+		this.testUpdateUserProperties();
 	}
 
 }

@@ -6,7 +6,7 @@ $( "#sellVideoGamesForm" ).on('submit',async function( event ) {
     let price = $('#videoGamePriceSell').val()
     const newToken = await firebase.auth().currentUser.getIdToken(true)
 
-    let response = await  fetch('/user/videogames/sell',{
+    let response = await  fetch('/addSellOffer?userId=${userId}&videoGameId=0&price=650',{
         method: 'POST',
         headers: {
           'authorization' : newToken,

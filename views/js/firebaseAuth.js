@@ -13,7 +13,7 @@ async function signOut(){
 
 
 
-
+let userId;
 
 async function signInWithGoogle(){
 
@@ -22,9 +22,9 @@ async function signInWithGoogle(){
         const data = await  firebase.auth().signInWithPopup(googleAuthProvider)
 
         // info to send to the server
-        const userId = data.user.uid;
+        const loginServiceId = data.user.uid;
         const name = data.user.displayName
-        const response = await  fetch('/user/signin',{
+        const response = await  fetch('/signin?loginServiceId=${loginServiceId}',{
             method: 'POST',
             headers: {
               'Accept':'application/json',
@@ -34,6 +34,8 @@ async function signInWithGoogle(){
         });
 
         const responseJson = await response.json()
+	userId = responseJson.userId;
+	
 
     }catch(error){
         console.log(error)
@@ -45,7 +47,7 @@ async function signInWithGoogle(){
 
 
 async function getUserLoggedIn(id){
-    let response = await  fetch(`/user/videogames/sell/${id}`,{
+    let response = await  fetch('getUserSellList?userId=${userId}',{
         method: 'GET',
         headers: {
           'Accept':'application/json',
@@ -59,7 +61,8 @@ async function getUserLoggedIn(id){
     responseJson.forEach( game => {
         items.append(`
             <tr>
-                <td> ${game.name} </td>
+		<td> ${game.offerId} </td>
+                <td> ${game.title} </td>
                 <td> ${game.price} </td>
             </tr>
         `)
@@ -68,7 +71,7 @@ async function getUserLoggedIn(id){
 
 
 
-    response = await  fetch(`/user/videogames/buy/${id}`,{
+    response = await  fetch('getUserBuyList?userId=${userId} ',{
         method: 'GET',
         headers: {
           'Accept':'application/json',
@@ -82,7 +85,8 @@ async function getUserLoggedIn(id){
     responseJson.forEach( game => {
         items.append(`
             <tr>
-                <td> ${game.name} </td>
+                <td> ${game.offerId} </td>
+                <td> ${game.title} </td>
                 <td> ${game.price} </td>
             </tr>
         `)

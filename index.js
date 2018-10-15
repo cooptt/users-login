@@ -10,8 +10,7 @@ const Analizer = require('./analizer/analizer').Analizer;
 
 
 const analizer = new Analizer();
-analizer.addVideoGame('Halo', 'halo.jpg');
-analizer.addVideoGame('GOW', 'gow.jpg')
+analizer.loadCatalogueFromFolders('./views/catalogue');
 
 const app = express()
 
@@ -80,26 +79,10 @@ app.get('/',(request,response)=>{
 
 
 
-app.post('/signin', tmpAuth, (request, response) => {
-    let msg = {};
-    msg.action = 'Sign in';
-    let loginServiceId = parseInt(request.query.loginServiceId )
-
-    if( analizer.loginServiceIdExists(loginServiceId)===false ){
-      analizer.addUser(loginServiceId);
-      msg.data = "New user registered Succesfully";
-    }else{
-      msg.data = "User already registered"
-    }
-    response.json(msg);
-})
 
 
 
-
-
-
-app.get('/getUserProperties', tmpAuth, (request, response) => {
+app.get('/getUserProperties',  (request, response) => {
     let msg = {};
     msg.action = 'Get User Properties'
     let userId = parseInt(request.query.userId);
@@ -119,7 +102,7 @@ app.get('/getUserProperties', tmpAuth, (request, response) => {
 })
 
 
-app.get('/getCatalogue', tmpAuth, (request, response) => {
+app.get('/getCatalogue',  (request, response) => {
     let msg = {};
     msg.action = 'Get Catalogue';
     msg.data = analizer.getCatalogue();
@@ -127,7 +110,7 @@ app.get('/getCatalogue', tmpAuth, (request, response) => {
 })
 
 
-app.get('/getUserSellList', tmpAuth, (request, response) => {
+app.get('/getUserSellList', (request, response) => {
     let msg = {};
     msg.action = 'Get User Sell List';
     let userId = parseInt(request.query.userId);
@@ -147,7 +130,7 @@ app.get('/getUserSellList', tmpAuth, (request, response) => {
 })
 
 
-app.get('/getUserBuyList', tmpAuth, (request, response) => {
+app.get('/getUserBuyList', (request, response) => {
     let msg = {};
     msg.action = 'Get User Buy List';
     let userId = parseInt(request.query.userId);
@@ -167,6 +150,50 @@ app.get('/getUserBuyList', tmpAuth, (request, response) => {
 })
 
 
+
+
+
+
+
+
+
+
+app.post('/signin', (request, response) => {
+    let msg = {};
+    msg.action = 'Sign in';
+    let loginServiceId = parseInt(request.query.loginServiceId )
+
+    if( analizer.loginServiceIdExists(loginServiceId)===false ){
+      analizer.addUser(loginServiceId);
+      msg.res = "New user registered Succesfully";
+    }else{
+      msg.res = "User already registered"
+    }
+    msg.data = analizer.getUserProperties( analizer.getUserIdFromLoginServiceId(loginServiceId) );
+    response.json(msg);
+})
+
+
+app.post('/updateUserProperties', (request, response) => {
+    let msg = {};
+    msg.action = 'Update User Properties ';
+    let userId = parseInt(request.query.userId);
+    let properties = request.body;
+
+    let isValid = true;
+
+    if( analizer.userIdExists(userId)===false ){
+      isValid = false;
+      msg.data = "Invalid UserId";
+    }
+
+    if(isValid){
+      analizer.updateUserProperties(userId, properties);
+      msg.data = 'User Properties updated'
+    }
+
+    response.json(msg);
+})
 
 
 
