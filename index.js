@@ -11,6 +11,7 @@ const Analizer = require('./analizer/analizer').Analizer;
 
 const analizer = new Analizer();
 analizer.addVideoGame('Halo', 'halo.jpg');
+analizer.addVideoGame('GOW', 'gow.jpg')
 
 const app = express()
 
@@ -80,53 +81,38 @@ app.get('/',(request,response)=>{
 
 
 app.post('/signin', tmpAuth, (request, response) => {
-    let loginServiceId = request.loginServiceId;
     let msg = {};
-    if( analizer.userExists(loginServiceId)===false ){
+    msg.action = 'Sign in';
+    let loginServiceId = parseInt(request.query.loginServiceId )
+
+    if( analizer.loginServiceIdExists(loginServiceId)===false ){
       analizer.addUser(loginServiceId);
-      msg.result = "New user registered Succesfully";
+      msg.data = "New user registered Succesfully";
     }else{
-      msg.result = "User already registered"
+      msg.data = "User already registered"
     }
-
-    let userId = analizer.getUserIdFromLoginServiceId(loginServiceId);
-    let userProperties = analizer.getUserProperties(userId);
-    msg.data = userProperties;
     response.json(msg);
-
 })
 
 
-app.post('/addSellOffer', tmpAuth, (request, response) => {
-    let msg = {};
-    msg.result = 'Add sell offer'
-    let loginServiceId = request.loginServiceId;
-    if( analizer.userExists(loginServiceId) ){
-      let userId = analizer.getUserIdFromLoginServiceId(loginServiceId);
-      let videoGameId = parseInt(request.body.videoGameId);
-      console.log('videogame id: ', request.body );
-      let price = parseInt(request.body.price);
-      analizer.addSellOffer(userId, videoGameId, price);
-      msg.data = 'Videogame added ';
-    } else{
-      msg.data = 'Error, incorrect params'  ;
-    }
-    response.json(msg);
 
-})
 
 
 
 app.get('/getUserProperties', tmpAuth, (request, response) => {
     let msg = {};
-    msg.result = 'User Properties'
-    let loginServiceId = request.loginServiceId;
-    if( analizer.userExists(loginServiceId) ){
-      let userId = analizer.getUserIdFromLoginServiceId(loginServiceId);
-      let userProperties = analizer.getUserProperties(userId);
-      msg.data = userProperties;
-    } else{
-      msg.data = 'Error, user not registered, id: ' + loginServiceId ;
+    msg.action = 'Get User Properties'
+    let userId = parseInt(request.query.userId);
+
+    let isValid = true;
+
+    if(isValid && analizer.userIdExists(userId)===false ){
+      isValid = false;
+      msg.data = 'Invalid UserId'
+    }
+
+    if(isValid){
+      msg.data = analizer.getUserProperties(userId);
     }
     
     response.json(msg);
@@ -135,10 +121,110 @@ app.get('/getUserProperties', tmpAuth, (request, response) => {
 
 app.get('/getCatalogue', tmpAuth, (request, response) => {
     let msg = {};
-    msg.result = 'Catalogue';
+    msg.action = 'Get Catalogue';
     msg.data = analizer.getCatalogue();
     response.json(msg);
 })
+
+
+app.get('/getUserSellList', tmpAuth, (request, response) => {
+    let msg = {};
+    msg.action = 'Get User Sell List';
+    let userId = parseInt(request.query.userId);
+
+    let isValid = true;
+
+    if(analizer.userIdExists(userId)===false){
+      isValid = false;
+      msg.data = 'Invalid UserId'
+    }
+
+    if(isValid){
+      msg.data = analizer.getUserSellList(userId);
+    }
+
+    response.json(msg);
+})
+
+
+app.get('/getUserBuyList', tmpAuth, (request, response) => {
+    let msg = {};
+    msg.action = 'Get User Buy List';
+    let userId = parseInt(request.query.userId);
+
+    let isValid = true;
+
+    if(analizer.userIdExists(userId)===false){
+      isValid = false;
+      msg.data = 'Invalid UserId'
+    }
+
+    if(isValid){
+      msg.data = analizer.getUserBuyList(userId);
+    }
+
+    response.json(msg);
+})
+
+
+
+
+
+
+app.post('/addSellOffer', (request, response) => {
+    let msg = {};
+    msg.action = 'Add sell offer'
+    let userId = parseInt(request.query.userId);
+    let videoGameId = parseInt(request.query.videoGameId);
+    let price = parseFloat(request.query.price).toFixed(2);
+
+    let isValid = true;
+
+    if(isValid && analizer.userIdExists(userId)===false){
+      isValid = false;
+      msg.data = 'Invalid UserId';
+    }
+
+    if(isValid && analizer.videoGameIdExists(videoGameId)===false){
+      isValid = false;
+      msg.data = 'Invalid VideoGameId';
+    }
+
+    if(isValid){
+      analizer.addSellOffer(userId, videoGameId, price);
+      msg.data = 'Offer Added';
+    }
+    response.json(msg);
+})
+
+
+app.post('/addBuyOffer', (request, response) => {
+    let msg = {};
+    msg.action = 'Add buy offer'
+    let userId = parseInt(request.query.userId);
+    let videoGameId = parseInt(request.query.videoGameId);
+    let price = parseFloat(request.query.price).toFixed(2);
+
+    let isValid = true;
+
+    if(isValid && analizer.userIdExists(userId)===false){
+      isValid = false;
+      msg.data = 'Invalid UserId';
+    }
+
+    if(isValid && analizer.videoGameIdExists(videoGameId)===false){
+      isValid = false;
+      msg.data = 'Invalid VideoGameId';
+    }
+
+    if(isValid){
+      analizer.addBuyOffer(userId, videoGameId, price);
+      msg.data = 'Offer Added';
+    }
+    response.json(msg);
+})
+
+
 
 
 

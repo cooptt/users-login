@@ -54,24 +54,7 @@ class IntegrationTests {
 			}, 1000);
 	}
 
-	testLogin(){
-		let options = {
-			method : 'POST',
-			url : 'http://localhost:8080/signin',
-			headers: { 
-				'User-Agent':'Mozilla/5.0',
-				'authorization' : 'abcdef' }
-		}
-
-		request(options, (err, res, body) => {
-			if( err ){
-				throw err;
-			} else{
-				let json = JSON.parse(body);
-				console.log(json);
-			}
-		});
-	}
+	
 
 	
 	testPOST(rsc, body){
@@ -116,22 +99,42 @@ class IntegrationTests {
 	}
 
 
+	testLogin(){
+		let src = '/signin?loginServiceId=1234'
+		let body = {  }
+		this.testPOST(src, body);
+	}
+
+	testAddSellOffer(){
+		let rsc = '/addSellOffer?userId=0&videoGameId=0&price=500'
+		let body = {}
+		this.testPOST(rsc, body);
+	}	
+
+	testAddBuyOffer(){
+		let rsc = '/addBuyOffer?userId=0&videoGameId=1&price=600'
+		let body = {}
+		this.testPOST(rsc, body);
+	}
+
+
 	testGetUserProperties(){
-		this.testGET('/getUserProperties');
+		this.testGET('/getUserProperties?userId=0');
 	}
 
 	testGetCatalogue(){
 		this.testGET('/getCatalogue');
 	}
 
-	testAddSellOffer(){
-		let rsc = '/addSellOffer'
-		let body = {
-			videoGameId:0,
-			price:500,
-		}
-		this.testPOST(rsc, body);
-	}	
+	testGetUserSellList(){
+		this.testGET('/getUserSellList?userId=0');
+	}
+
+	testGetUserBuyList(){
+		this.testGET('/getUserBuyList?userId=0');
+	}
+
+	
 
 
 
@@ -143,6 +146,9 @@ class IntegrationTests {
 		this.testGetUserProperties();
 		this.testGetCatalogue();
 		this.testAddSellOffer();
+		this.testAddBuyOffer();
+		this.testGetUserSellList();
+		this.testGetUserBuyList();
 	}
 
 }
