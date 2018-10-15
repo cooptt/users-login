@@ -3,12 +3,13 @@ const logger = require('morgan')          // logs every endpoint
 const ejs = require('ejs')                // embedded javascript
 const bodyParser = require('body-parser') // to parse the body in the request
 const admin = require('firebase-admin') // service firebase
-const analizer = require('./src/analizer')  //// analizer
+//const analizer = require('./src/analizer')  //// analizer
+const Analizer = require('./analizer/analizer').Analizer;
 
 
 
 
-
+const analizer = new Analizer();
 
 const app = express()
 
@@ -55,9 +56,8 @@ const checkAuth = (request,response,next) =>{
    let idToken = request.headers.authorization
 
    admin.auth().verifyIdToken(idToken)
-  .then(function(decodedToken) {
-      let id = decodedToken.uid;
-      request.id = id
+  .then(function(decodedToken) { 
+      request.loginServiceId = decodedToken.uid;
       next()
 
   }).catch(function(error) {
@@ -78,9 +78,32 @@ app.get('/',(request,response)=>{
 })
 
 
+const tmpAuth = (request, response, next) => {
+  request.loginServiceId = 1717;
+  next();
+}
+
+app.post('/signin', tmpAuth, (request, response) => {
+    let loginServiceId = request.loginServiceId;
+    let msg = {};
+    if( analizer.userExists(loginServiceId)===false ){
+      analizer.addUser(loginServiceId);
+      msg.result = "New user registered Succesfully";
+    }else{
+      msg.result = "User already registered"
+    }
+
+    let userId = analizer.getUserIdFromLoginServiceId(loginServiceId);
+    let userProperties = analizer.getUserProperties(userId);
+    msg.data = userProperties;
+    response.json(msg);
+
+})
 
 
 
+
+/*
 // to save an user
 app.post('/user/signin',(request,response)=>{
     let parameters = request.body;
@@ -93,10 +116,12 @@ app.post('/user/signin',(request,response)=>{
     }
 })
 
+*/
 
 
 
 
+/*
 app.get('/user/videogames/buy/:id', (request,response)=>{
     let id = request.params.id
     let user = analizer.findUser(id)
@@ -109,7 +134,7 @@ app.get('/user/videogames/buy/:id', (request,response)=>{
 
 
 
-
+// id
 
 app.get('/user/videogames/sell/:id', (request,response)=>{
     let id = request.params.id
@@ -145,7 +170,19 @@ app.post('/user/videogames/buy',checkAuth,(request,response)=>{
     return response.json({message:'videogame added'})
 })
 
+
+*/
+
+
+
+
+
+
+
+
 // callback
 app.listen(port,()=>{
   console.log(`Running in the port ${port}`)
 })
+
+
