@@ -10,6 +10,7 @@ const Analizer = require('./analizer/analizer').Analizer;
 
 
 const analizer = new Analizer();
+analizer.addVideoGame('Halo', 'halo.jpg');
 
 const app = express()
 
@@ -28,10 +29,6 @@ let port = process.env.PORT || 8080
 // engine template
 app.set('view engine','ejs') // instead of use normal html, use ejs
 app.set('views',__dirname + '/views') // static files (public folder)
-
-
-
-
 
 
 
@@ -56,20 +53,23 @@ const checkAuth = (request,response,next) =>{
    let idToken = request.headers.authorization
 
    admin.auth().verifyIdToken(idToken)
-  .then(function(decodedToken) { 
+    .then(function(decodedToken) { 
       request.loginServiceId = decodedToken.uid;
       next()
 
-  }).catch(function(error) {
-      console.log(error)
-      return response.status(500).json({
-          status: 'invalid token'
-      });
-  });
-
+    }).catch(function(error) {
+        console.log(error)
+        return response.status(500).json({
+            status: 'invalid token'
+        });
+    });
 }
 
-
+const tmpAuth = (request, response, next) => {
+  // process request.authorization
+  request.loginServiceId = request.headers.authorization;
+  next();
+}
 
 
 
@@ -78,10 +78,6 @@ app.get('/',(request,response)=>{
 })
 
 
-const tmpAuth = (request, response, next) => {
-  request.loginServiceId = 1717;
-  next();
-}
 
 app.post('/signin', tmpAuth, (request, response) => {
     let loginServiceId = request.loginServiceId;
@@ -99,6 +95,60 @@ app.post('/signin', tmpAuth, (request, response) => {
     response.json(msg);
 
 })
+
+
+app.post('/addSellOffer', tmpAuth, (request, response) => {
+    let msg = {};
+    msg.result = 'Add sell offer'
+    let loginServiceId = request.loginServiceId;
+    if( analizer.userExists(loginServiceId) ){
+      let userId = analizer.getUserIdFromLoginServiceId(loginServiceId);
+      let videoGameId = parseInt(request.body.videoGameId);
+      console.log('videogame id: ', request.body );
+      let price = parseInt(request.body.price);
+      analizer.addSellOffer(userId, videoGameId, price);
+      msg.data = 'Videogame added ';
+    } else{
+      msg.data = 'Error, incorrect params'  ;
+    }
+    response.json(msg);
+
+})
+
+
+
+app.get('/getUserProperties', tmpAuth, (request, response) => {
+    let msg = {};
+    msg.result = 'User Properties'
+    let loginServiceId = request.loginServiceId;
+    if( analizer.userExists(loginServiceId) ){
+      let userId = analizer.getUserIdFromLoginServiceId(loginServiceId);
+      let userProperties = analizer.getUserProperties(userId);
+      msg.data = userProperties;
+    } else{
+      msg.data = 'Error, user not registered, id: ' + loginServiceId ;
+    }
+    
+    response.json(msg);
+})
+
+
+app.get('/getCatalogue', tmpAuth, (request, response) => {
+    let msg = {};
+    msg.result = 'Catalogue';
+    msg.data = analizer.getCatalogue();
+    response.json(msg);
+})
+
+
+
+
+
+// callback
+app.listen(port,()=>{
+  console.log(`Running in the port ${port}`)
+})
+
 
 
 
@@ -180,9 +230,5 @@ app.post('/user/videogames/buy',checkAuth,(request,response)=>{
 
 
 
-// callback
-app.listen(port,()=>{
-  console.log(`Running in the port ${port}`)
-})
 
 

@@ -1,5 +1,6 @@
 
 const Analizer = require("./analizer/analizer").Analizer;
+const request = require('request');
 
 
 class IntegrationTests {
@@ -53,10 +54,95 @@ class IntegrationTests {
 			}, 1000);
 	}
 
+	testLogin(){
+		let options = {
+			method : 'POST',
+			url : 'http://localhost:8080/signin',
+			headers: { 
+				'User-Agent':'Mozilla/5.0',
+				'authorization' : 'abcdef' }
+		}
+
+		request(options, (err, res, body) => {
+			if( err ){
+				throw err;
+			} else{
+				let json = JSON.parse(body);
+				console.log(json);
+			}
+		});
+	}
+
+	
+	testPOST(rsc, body){
+		let options = {
+			method : 'POST',
+			url : 'http://localhost:8080' + rsc  ,
+			form : body,
+			headers: { 
+				'User-Agent':'Mozilla/5.0',
+				'authorization' : 'abcdef' }
+		}
+
+		request(options, (err, res, body) => {
+			if( err ){
+				throw err;
+			} else{
+				let json = JSON.parse(body);
+				console.log(json);
+			}
+		});
+	}
+
+
+
+	testGET(rsc){
+		let options = {
+			method : 'GET',
+			url : 'http://localhost:8080' + rsc  ,
+			headers: { 
+				'User-Agent':'Mozilla/5.0',
+				'authorization' : 'abcdef' }
+		}
+
+		request(options, (err, res, body) => {
+			if( err ){
+				throw err;
+			} else{
+				let json = JSON.parse(body);
+				console.log(json);
+			}
+		});
+	}
+
+
+	testGetUserProperties(){
+		this.testGET('/getUserProperties');
+	}
+
+	testGetCatalogue(){
+		this.testGET('/getCatalogue');
+	}
+
+	testAddSellOffer(){
+		let rsc = '/addSellOffer'
+		let body = {
+			videoGameId:0,
+			price:500,
+		}
+		this.testPOST(rsc, body);
+	}	
+
+
+
 
 	runAllTests(){
 		console.log("IntegrationTest started ...");
-		this.testLoadCatalogueFromFolders();
+		//this.testLoadCatalogueFromFolders();
+		this.testLogin();
+		this.testGetUserProperties();
+		this.testGetCatalogue();
+		this.testAddSellOffer();
 	}
 
 }
